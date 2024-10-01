@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Job Recommendation System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: white;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+        }
+        .file-upload {
+            margin: 20px 0;
+        }
+        .file-upload input[type="file"] {
+            width: 100%;
+            padding: 10px;
+        }
+        .btn-submit {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        .btn-submit:hover {
+            background-color: #218838;
+        }
+        .results {
+            margin-top: 20px;
+        }
+        .job-list {
+            list-style: none;
+            padding: 0;
+        }
+        .job-list li {
+            background-color: #e9ecef;
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Job Recommendation System</h1>
+        <form id="uploadForm">
+            <div class="file-upload">
+                <label for="cvFile">Upload your CV:</label>
+                <input type="file" id="cvFile" name="file" accept=".pdf" required>
+            </div>
+            <button type="submit" class="btn-submit">Get Job Recommendations</button>
+        </form>
+        
+        <div class="results" id="results">
+            <h3>Recommended Jobs:</h3>
+            <ul class="job-list" id="jobList"></ul>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('uploadForm').addEventListener('submit', function (event) {
+            event.preventDefault();
+            
+            const fileInput = document.getElementById('cvFile');
+            const file = fileInput.files[0];
+            if (!file) {
+                alert('Please upload a CV.');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            fetch('/upload', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert(data.error);
+                } else {
+                    displayJobs(data.jobs);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
+
+        function displayJobs(jobs) {
+            const jobList = document.getElementById('jobList');
+            jobList.innerHTML = '';  // Clear any previous results
+
+            if (jobs.length === 0) {
+                jobList.innerHTML = '<li>No jobs found</li>';
+            } else {
+                jobs.forEach(job => {
+                    const jobItem = document.createElement('li');
+                    jobItem.innerHTML = `
+                        <strong>Title:</strong> ${job.title}<br>
+                        <strong>Company:</strong> ${job.company}<br>
+                        <strong>Location:</strong> ${job.location}
+                    `;
+                    jobList.appendChild(jobItem);
+                });
+            }
+        }
+    </script>
+</body>
+</html>
